@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'WordPress on AWS EC2 with LAMP stack and RDS'
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'Database Configuration'
+        Parameters:
+          - DBName
+          - DBUser
+          - DBPassword
+          - DBRootPassword
+      - Label:
+          default: 'Region Configuration'
+        Parameters:
+          - RegionMap
+      - Label:
+          default: 'Key Pair Configuration'
+        Parameters:
+          - KeyName
+      - Label:
+          default: 'Web Server Configuration'
+        Parameters:
+          - WebServerSecurityGroup
+          - WebServer              
+Parameters:
+  KeyName:
+    Description: 'Name of an existing EC2 KeyPair to enable SSH access'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: 'Must be the name of an existing EC2 KeyPair.'
+  DBName:
+    Description: 'WordPress database name'
+    Type: String
+    Default: 'wordpress'
+  DBUser:
+    Description: 'WordPress database username'
+    Type: String
+    Default: 'wpuser'
+  DBPassword:
+    Description: 'WordPress database password'
+    Type: String
+    NoEcho: true
+    MinLength: 8
+  DBRootPassword:
+    Description: 'Root database password'
+    Type: String
+    NoEcho: true
+    MinLength: 8
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: 'ami-0cff7528ff583bf9a' # Amazon Linux 2
+    us-west-2:
+      AMI: 'ami-03f65b8614a860c29'
+    eu-west-1:
+      AMI: 'ami-0bbc25e23a7640b9b'
+
+Resources:
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Enable HTTP and SSH access'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  WebServer:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', AMI]
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y
+          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          yum install -y httpd mariadb-server
+          systemctl start httpd
+          systemctl enable httpd
+
+          systemctl start mariadb
+          mysqladmin -u root password '${DBRootPassword}'
+          cat > /tmp/mysql_commands <<EOF
+          CREATE DATABASE ${DBName};
+          CREATE USER '${DBUser}'@'localhost' IDENTIFIED BY '${DBPassword}';
+          GRANT ALL PRIVILEGES ON ${DBName}.* TO '${DBUser}'@'localhost';
+          FLUSH PRIVILEGES;
+          EOF
+          mysql -u root -p${DBRootPassword} < /tmp/mysql_commands
+
+          cd /var/www/html
+          wget https://wordpress.org/latest.tar.gz
+          tar -xzf latest.tar.gz
+          cp -r wordpress/* .
+          rm -rf wordpress latest.tar.gz
+
+          chown -R apache:apache /var/www/html
+          systemctl restart httpd
+
+Outputs:
+  WebsiteURL:
+    Description: 'WordPress Website URL'
+    Value: !Sub 'http://${WebServer.PublicDnsName}'
+  AdminURL:
+    Description: 'WordPress Admin URL'
+    Value: !Sub 'http://${WebServer.PublicDnsName}/wp-admin'
+  SSHCommand:
+    Description: 'Command to SSH into the instance'
+    Value: !Sub 'ssh -i ${KeyName}.pem ec2-user@${WebServer.PublicDnsName}'
