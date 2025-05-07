@@ -79,6 +79,8 @@ Parameter Description⁣⁣
 5. MariaDB (MySQL)⁣
 6. PHP⁣
 7. WordPress⁣
+
+---
 ⁣
 ### ✅ 𝐁𝐞𝐧𝐞𝐟𝐢𝐭𝐬⁣
 1. Full control of your infrastructure⁣
@@ -86,17 +88,23 @@ Parameter Description⁣⁣
 3. No manual setup⁣
 4. Reusable and scalable⁣
 5. Compatible with AWS Free Tier⁣
+
+---
 ⁣
 ### 🧪 𝐅𝐮𝐭𝐮𝐫𝐞 𝐈𝐦𝐩𝐫𝐨𝐯𝐞𝐦𝐞𝐧𝐭𝐬⁣
 1. Add HTTPS support with ACM + ALB⁣
 2. Automatically configure Elastic IP⁣
 3. Parameterize WordPress version⁣
 4. Integrate with Amazon RDS for managed DB⁣
+
+---
 ⁣
 ### 📎 𝐑𝐞𝐥𝐚𝐭𝐞𝐝 𝐋𝐢𝐧𝐤𝐬⁣⁣
-AWS CloudFormation Docs⁣
-⁣
-WordPress on EC2 Guide⁣
+- [AWS CloudFormation Documentation](https://docs.aws.amazon.com/cloudformation/)
+- [WordPress on EC2 Guide](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hosting-wordpress.html)
+- [Amazon Linux 2 AMI Docs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/amazon-linux-2.html)
+- [RDS MySQL Best Practices](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_BestPractices.html)
+- [AWS Security Best Practices](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html)
 ⁣
 ### 👩🏽‍💻 𝐀𝐮𝐭𝐡𝐨𝐫⁣
 Patience Sonia Ogbeba ~~~⁣
